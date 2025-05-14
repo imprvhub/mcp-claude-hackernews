@@ -1,10 +1,15 @@
 # MCP Claude Hacker News
-
+[![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/63f8ec05-a890-4a4d-9d8d-bea3c9a05c54)
 [![smithery badge](https://smithery.ai/badge/@imprvhub/mcp-claude-spotify)](https://smithery.ai/server/@imprvhub/mcp-claude-hackernews)
 
 
 <table style="border-collapse: collapse; width: 100%; table-layout: fixed;">
 <tr>
+<td style="padding: 15px; vertical-align: middle; border: none; text-align: center;">
+  <a href="https://mseep.ai/app/imprvhub-mcp-claude-hackernews">
+    <img src="https://mseep.net/pr/imprvhub-mcp-claude-hackernews-badge.png" alt="MseeP.ai Security Assessment Badge" />
+  </a>
+</td>  
 <td style="width: 40%; padding: 15px; vertical-align: middle; border: none;">An integration that allows Claude Desktop to interact with Hacker News using the Model Context Protocol (MCP).</td>
 <td style="width: 60%; padding: 0; vertical-align: middle; border: none; min-width: 300px; text-align: center;"><a href="https://glama.ai/mcp/servers/@imprvhub/mcp-claude-hackernews">
   <img style="max-width: 100%; height: auto; min-width: 300px;" src="https://glama.ai/mcp/servers/@imprvhub/mcp-claude-hackernews/badge" alt="mcp-claude-hackernews MCP server" />
