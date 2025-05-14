@@ -227,3 +227,4 @@ This project is licensed under the Mozilla Public License 2.0 - see the [LICENSE
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 - [Hacker News API](https://github.com/HackerNews/API)
 - [Claude Desktop](https://claude.ai/download)
+- [MCP Series](https://github.com/mcp-series)
