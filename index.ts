@@ -144,21 +144,83 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
-        name: "hn",
-        description: "Interfaz principal para Hacker News con comandos simplificados",
+        name: "hn_latest",
+        description: "Get the latest/newest stories from Hacker News",
         inputSchema: {
           type: "object",
           properties: {
-            command: {
-              type: "string",
-              description: "Comando a ejecutar (latest, top, best, history, comments)"
-            },
-            param: {
-              type: "string",
-              description: "Parámetro opcional, número precedido por -- (ejemplo: --10, --50)"
+            limit: {
+              type: "number",
+              description: "Number of stories to fetch (1-50, default: 10)",
+              minimum: 1,
+              maximum: 50,
+              default: 10
+            }
+          }
+        }
+      },
+      {
+        name: "hn_top",
+        description: "Get the top-ranked stories from Hacker News",
+        inputSchema: {
+          type: "object",
+          properties: {
+            limit: {
+              type: "number",
+              description: "Number of stories to fetch (1-50, default: 10)",
+              minimum: 1,
+              maximum: 50,
+              default: 10
+            }
+          }
+        }
+      },
+      {
+        name: "hn_best",
+        description: "Get the best stories from Hacker News",
+        inputSchema: {
+          type: "object",
+          properties: {
+            limit: {
+              type: "number",
+              description: "Number of stories to fetch (1-50, default: 10)",
+              minimum: 1,
+              maximum: 50,
+              default: 10
+            }
+          }
+        }
+      },
+      {
+        name: "hn_story",
+        description: "Get details for a specific story by ID",
+        inputSchema: {
+          type: "object",
+          properties: {
+            story_id: {
+              type: "number",
+              description: "The ID of the story to fetch"
             }
           },
-          required: ["command"]
+          required: ["story_id"]
+        }
+      },
+      {
+        name: "hn_comments",
+        description: "Get comments for a story (by story ID or index from last story list)",
+        inputSchema: {
+          type: "object",
+          properties: {
+            story_id: {
+              type: "number",
+              description: "The ID of the story to get comments for"
+            },
+            story_index: {
+              type: "number",
+              description: "The index (1-based) of the story from the last fetched list",
+              minimum: 1
+            }
+          }
         }
       }
     ]
@@ -170,220 +232,174 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   
   
 try {
-  if (name === "hn") {
-    const command = (typeof args?.command === 'string' ? args.command : '').toLowerCase() || '';
-    const param = args?.param || '';
-      
-      let numParam = 10;
-      if (param && typeof param === 'string' && param.indexOf('--') === 0) {
-        const paramValue = parseInt(param.slice(2), 10);
-        if (!isNaN(paramValue) && paramValue > 0) {
-          numParam = Math.min(paramValue, 50);
-        }
-      }
-      
-      switch (command) {
-        case 'latest':
-          return await handleLatestStories(numParam);
-        
-        case 'top':
-          return await handleTopStories(numParam);
-        
-        case 'best':
-          return await handleBestStories(numParam);
-        
-        case 'history':
-          if (param && typeof param === 'string' && param.indexOf('--') === 0) {
-            const storyId = param.slice(2);
-            return await handleGetStory(storyId);
-          } else {
-            throw new Error('Se requiere un ID de historia (formato: hn history --12345678)');
-          }
-        
-        case 'comments':
-          if (param && typeof param === 'string' && param.indexOf('--') === 0) {
-            const storyIndex = parseInt(param.slice(2), 10);
-            if (!isNaN(storyIndex) && storyIndex > 0 && storyIndex <= lastStoriesList.length) {
-              const story = lastStoriesList[storyIndex - 1];
-              return await handleGetComments(story.id);
-            } else if (!isNaN(parseInt(param.slice(2), 10))) {
-              return await handleGetComments(parseInt(param.slice(2), 10));
-            }
-          }
-          throw new Error('Se requiere un índice válido o ID de historia (formato: hn comments --3 o hn comments --12345678)');
-        
-        default:
-          throw new Error(`Comando desconocido: ${command}. Comandos disponibles: latest, top, best, history, comments`);
-      }
-    }
-    
-    throw new Error(`Herramienta desconocida: ${name}`);
-  } catch (error) {
-    console.error(`Error al manejar la solicitud:`, error);
-    throw error;
-  }
-});
-
-async function handleLatestStories(count: number) {
-  const stories = await api.getLatestStories(count);
-  
-  const formattedStories = stories.map(story => ({
-    id: story.id,
-    title: story.title,
-    by: story.by,
-    time: api.formatTime(story.time),
-    url: story.url,
-    score: story.score,
-    commentsCount: story.kids?.length || 0
-  }));
-  
-  lastStoriesList = formattedStories;
-  
-  return {
-    content: [
-      {
-        type: "text",
-        text: formatStoriesAsText(formattedStories)
-      }
-    ]
-  };
-}
-
-async function handleTopStories(count: number) {
-  const stories = await api.getTopStories(count);
-  
-  const formattedStories = stories.map(story => ({
-    id: story.id,
-    title: story.title,
-    by: story.by,
-    time: api.formatTime(story.time),
-    url: story.url,
-    score: story.score,
-    commentsCount: story.kids?.length || 0
-  }));
-  
-  lastStoriesList = formattedStories;
-  
-  return {
-    content: [
-      {
-        type: "text",
-        text: formatStoriesAsText(formattedStories)
-      }
-    ]
-  };
-}
-
-async function handleBestStories(count: number) {
-  const stories = await api.getBestStories(count);
-  
-  const formattedStories = stories.map(story => ({
-    id: story.id,
-    title: story.title,
-    by: story.by,
-    time: api.formatTime(story.time),
-    url: story.url,
-    score: story.score,
-    commentsCount: story.kids?.length || 0
-  }));
-  
-  lastStoriesList = formattedStories;
-  
-  return {
-    content: [
-      {
-        type: "text",
-        text: formatStoriesAsText(formattedStories)
-      }
-    ]
-  };
-}
-
-async function handleGetStory(storyId: string) {
-  const numericId = parseInt(storyId, 10);
-  if (isNaN(numericId)) {
-    throw new Error('El ID de historia debe ser un número');
-  }
-  
-  const story = await api.getItemDetails(numericId) as Story | null;
-  if (!story) {
-    throw new Error(`No se encontró la historia con ID ${numericId}`);
-  }
-  
-  const formattedStory = {
-    id: story.id,
-    title: story.title,
-    by: story.by,
-    time: api.formatTime(story.time),
-    url: story.url,
-    text: story.text ? api.cleanText(story.text) : '',
-    score: story.score,
-    commentsCount: story.kids?.length || 0
-  };
-  
-  return {
-    content: [
-      {
-        type: "text",
-        text: formatStoryAsText(formattedStory)
-      }
-    ]
-  };
-}
-
-async function handleGetComments(storyId: number) {
-  if (isNaN(storyId)) {
-    throw new Error('El ID de historia debe ser un número');
-  }
-  
-  const story = await api.getItemDetails(storyId) as Story | null;
-  if (!story) {
-    throw new Error(`No se encontró la historia con ID ${storyId}`);
-  }
-  
-  if (!story.kids || story.kids.length === 0) {
+  if (name === "hn_latest") {
+    const limit = typeof args?.limit === 'number' ? args.limit : 10;
+    const stories = await api.getLatestStories(limit);
+    const formattedStories = stories.map(story => ({
+      id: story.id,
+      title: story.title,
+      by: story.by,
+      time: api.formatTime(story.time),
+      url: story.url,
+      score: story.score,
+      commentsCount: story.kids?.length || 0
+    }));
+    lastStoriesList = formattedStories;
     return {
       content: [
         {
           type: "text",
-          text: `No se encontraron comentarios para la historia "${story.title}" (ID: ${story.id})`
+          text: formatStoriesAsText(formattedStories)
         }
       ]
     };
   }
-  
-  const comments = await api.getComments(story.kids);
-  
-  const formattedComments = comments.map(comment => ({
-    id: comment.id,
-    by: comment.by,
-    time: api.formatTime(comment.time),
-    text: api.cleanText(comment.text),
-    replies: comment.kids ? comment.kids.length : 0
-  }));
-  
-  return {
-    content: [
-      {
-        type: "text",
-        text: formatCommentsAsText(story.title, formattedComments)
-      }
-    ]
-  };
-}
+  if (name === "hn_top") {
+    const limit = typeof args?.limit === 'number' ? args.limit : 10;
+    const stories = await api.getTopStories(limit);
+    const formattedStories = stories.map(story => ({
+      id: story.id,
+      title: story.title,
+      by: story.by,
+      time: api.formatTime(story.time),
+      url: story.url,
+      score: story.score,
+      commentsCount: story.kids?.length || 0
+    }));
+    lastStoriesList = formattedStories;
+    return {
+      content: [
+        {
+          type: "text",
+          text: formatStoriesAsText(formattedStories)
+        }
+      ]
+    };
+  }
+  if (name === "hn_best") {
+    const limit = typeof args?.limit === 'number' ? args.limit : 10;
+    const stories = await api.getBestStories(limit);
+    const formattedStories = stories.map(story => ({
+      id: story.id,
+      title: story.title,
+      by: story.by,
+      time: api.formatTime(story.time),
+      url: story.url,
+      score: story.score,
+      commentsCount: story.kids?.length || 0
+    }));
+    lastStoriesList = formattedStories;
+    return {
+      content: [
+        {
+          type: "text",
+          text: formatStoriesAsText(formattedStories)
+        }
+      ]
+    };
+  }
+  if (name === "hn_story") {
+    const storyId = typeof args?.story_id === 'number' ? args.story_id : NaN;
+    if (isNaN(storyId)) {
+      throw new Error('Story ID must be a number');
+    }
+    const story = await api.getItemDetails(storyId) as Story | null;
+    if (!story) {
+      throw new Error(`Story with ID ${storyId} not found`);
+    }
+    const formattedStory = {
+      id: story.id,
+      title: story.title,
+      by: story.by,
+      time: api.formatTime(story.time),
+      url: story.url,
+      text: story.text ? api.cleanText(story.text) : '',
+      score: story.score,
+      commentsCount: story.kids?.length || 0
+    };
+    return {
+      content: [
+        {
+          type: "text",
+          text: formatStoryAsText(formattedStory)
+        }
+      ]
+    };
+  }
+  if (name === "hn_comments") {
+    const storyId = typeof args?.story_id === 'number' ? args.story_id : NaN;
+    const storyIndex = typeof args?.story_index === 'number' ? args.story_index : NaN;
+
+    if (isNaN(storyId) && isNaN(storyIndex)) {
+      throw new Error('Either a story ID or a story index is required');
+    }
+
+    let targetStoryId: number;
+    if (!isNaN(storyId)) {
+      targetStoryId = storyId;
+    } else if (!isNaN(storyIndex) && storyIndex > 0 && storyIndex <= lastStoriesList.length) {
+      targetStoryId = lastStoriesList[storyIndex - 1].id;
+    } else {
+      throw new Error('Invalid story index or ID provided');
+    }
+
+    if (isNaN(targetStoryId)) {
+      throw new Error('Story ID must be a number');
+    }
+
+    const story = await api.getItemDetails(targetStoryId) as Story | null;
+    if (!story) {
+      throw new Error(`Story with ID ${targetStoryId} not found`);
+    }
+
+    if (!story.kids || story.kids.length === 0) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `No comments found for story "${story.title}" (ID: ${story.id})`
+          }
+        ]
+      };
+    }
+
+    const comments = await api.getComments(story.kids);
+    const formattedComments = comments.map(comment => ({
+      id: comment.id,
+      by: comment.by,
+      time: api.formatTime(comment.time),
+      text: api.cleanText(comment.text),
+      replies: comment.kids ? comment.kids.length : 0
+    }));
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: formatCommentsAsText(story.title, formattedComments)
+        }
+      ]
+    };
+  }
+  throw new Error(`Unknown tool: ${name}`);
+} catch (error) {
+    console.error(`Error handling request:`, error);
+    throw error;
+  }
+});
 
 function formatStoriesAsText(stories: FormattedStory[]): string {
   if (!stories || stories.length === 0) {
-    return "No se encontraron historias.";
+    return "No stories found.";
   }
   
   return stories.map((story, index) => {
     return `${index + 1}. ${story.title}
    ID: ${story.id}
-   Por: ${story.by}
-   Publicado: ${story.time}
-   Puntos: ${story.score}
-   Comentarios: ${story.commentsCount}
+   By: ${story.by}
+   Published: ${story.time}
+   Score: ${story.score}
+   Comments: ${story.commentsCount}
    URL: ${story.url || 'N/A'}
    ------------------------------`;
   }).join('\n\n');
@@ -391,19 +407,19 @@ function formatStoriesAsText(stories: FormattedStory[]): string {
 
 function formatStoryAsText(story: FormattedStory): string {
   if (!story) {
-    return "No se encontró la historia.";
+    return "Story not found.";
   }
   
-  let result = `Título: ${story.title}
+  let result = `Title: ${story.title}
 ID: ${story.id}
-Por: ${story.by}
-Publicado: ${story.time}
-Puntos: ${story.score}
-Comentarios: ${story.commentsCount}
+By: ${story.by}
+Published: ${story.time}
+Score: ${story.score}
+Comments: ${story.commentsCount}
 URL: ${story.url || 'N/A'}`;
 
   if (story.text) {
-    result += `\n\nContenido:\n${story.text}`;
+    result += `\n\nContent:\n${story.text}`;
   }
   
   return result;
@@ -411,15 +427,15 @@ URL: ${story.url || 'N/A'}`;
 
 function formatCommentsAsText(storyTitle: string, comments: FormattedComment[]): string {
   if (!comments || comments.length === 0) {
-    return "No se encontraron comentarios.";
+    return "No comments found.";
   }
   
-  const header = `Comentarios para "${storyTitle}" (Total: ${comments.length}):\n`;
+  const header = `Comments for "${storyTitle}" (Total: ${comments.length}):\n`;
   
   const formattedComments = comments.map((comment, index) => {
-    return `${index + 1}. Comentario de ${comment.by} a las ${comment.time}:
+    return `${index + 1}. Comment by ${comment.by} at ${comment.time}:
    "${comment.text}"
-   ${comment.replies > 0 ? `(${comment.replies} respuestas)` : '(sin respuestas)'}
+   ${comment.replies > 0 ? `(${comment.replies} replies)` : '(no replies)'}
    ------------------------------`;
   }).join('\n\n');
   
@@ -431,14 +447,14 @@ async function main() {
   
   try {
     await server.connect(transport);
-    console.error("Servidor MCP de Hacker News ejecutándose en stdio");
+    console.error("MCP Hacker News server running on stdio");
   } catch (error) {
-    console.error("Error al conectar con el transporte:", error);
+    console.error("Error connecting to transport:", error);
     throw error;
   }
 }
 
 main().catch((error) => {
-  console.error("Error fatal en main():", error);
+  console.error("Fatal error in main():", error);
   process.exit(1);
 });

@@ -132,38 +132,62 @@ The MCP server will automatically start when Claude Desktop needs it, based on t
 ## Usage
 
 1. Restart Claude Desktop after modifying the configuration
-2. In Claude, use the `hn` command to interact with Hacker News
+2. In Claude, use the Hacker News tools to interact with Hacker News
 3. The MCP server runs as a child process managed by Claude Desktop
 
-## Available Commands
+## Available Tools
 
-The Hacker News MCP provides a single tool named `hn` with several commands:
+The Hacker News MCP provides **5 specialized tools** for different functions:
 
-| Command | Description | Parameters | Example |
-|---------|-------------|------------|---------|
-| `latest` | Get the most recent stories from Hacker News | `param`: Optional number of stories (default: 10, max: 50) | `hn latest --50` |
-| `top` | Get the top stories from Hacker News | `param`: Optional number of stories (default: 10, max: 50) | `hn top --20` |
-| `best` | Get the best stories from Hacker News | `param`: Optional number of stories (default: 10, max: 50) | `hn best --30` |
-| `history` | Get detailed information about a specific story | `param`: Required story ID | `hn history --12345678` |
-| `comments` | Get comments for a story | `param`: Required index from last list or story ID | `hn comments --3` or `hn comments --12345678` |
+| Tool | Description | Parameters | Example Usage |
+|------|-------------|------------|---------------|
+| `hn_latest` | Get the most recent stories from Hacker News | `limit`: Optional number of stories (1-50, default: 10) | Get 20 latest stories |
+| `hn_top` | Get the top-ranked stories from Hacker News | `limit`: Optional number of stories (1-50, default: 10) | Get 15 top stories |
+| `hn_best` | Get the best stories from Hacker News | `limit`: Optional number of stories (1-50, default: 10) | Get 25 best stories |
+| `hn_story` | Get detailed information about a specific story | `story_id`: Required story ID (number) | Get story details by ID |
+| `hn_comments` | Get comments for a story | `story_id`: Story ID (number) OR `story_index`: Index from last list (1-based) | Get comments by story ID or index |
+
+### Tool Parameters Details
+
+#### `hn_latest`, `hn_top`, `hn_best`
+- **`limit`** (optional): Number of stories to fetch
+  - Type: Number
+  - Range: 1-50
+  - Default: 10
+
+#### `hn_story`
+- **`story_id`** (required): The ID of the story to fetch
+  - Type: Number
+  - Example: 12345678
+
+#### `hn_comments`
+- **`story_id`** (optional): The ID of the story to get comments for
+  - Type: Number
+  - Example: 12345678
+- **`story_index`** (optional): The index of the story from the last fetched list
+  - Type: Number (1-based)
+  - Example: 3 (for the 3rd story in the last list)
+
+*Note: For `hn_comments`, you must provide either `story_id` OR `story_index`*
 
 ## Example Usage
 
 Here are various examples of how to use the Hacker News MCP with Claude:
 
-### Direct Commands:
+### Direct Tool Usage:
 
 ```
-hn latest --50
-hn top --20
-hn best --30
-hn history --29384756
-hn comments --5
+"Use hn_latest to get 20 recent stories"
+"Use hn_top with limit 15 to get top stories"
+"Use hn_best to get 25 best stories"
+"Use hn_story with story_id 29384756 to get story details"
+"Use hn_comments with story_index 3 to get comments for the 3rd story"
+"Use hn_comments with story_id 12345678 to get comments for that story"
 ```
 
 ### Natural Language Queries:
 
-You can also interact with the MCP using natural language. Claude will interpret these requests and use the appropriate commands:
+You can also interact with the MCP using natural language. Claude will interpret these requests and use the appropriate tools:
 
 - "Show me the top 30 stories on Hacker News today"
 - "What are the 40 latest posts on Hacker News?"
@@ -175,6 +199,8 @@ You can also interact with the MCP using natural language. Claude will interpret
 - "What are the 30 most active discussions on Hacker News right now?"
 - "I'm interested in reading the 40 most popular Hacker News articles this week"
 - "Show me a list of 20 best programming articles from Hacker News"
+- "Get the comments for story number 5 from the last list"
+- "Show me the details of story ID 12345678"
 
 ### Language Translation Requests:
 
