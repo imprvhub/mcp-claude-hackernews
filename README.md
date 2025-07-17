@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/imprvhub-mcp-claude-hackernews-badge.png)](https://mseep.ai/app/imprvhub-mcp-claude-hackernews)
+
 # MCP Claude Hacker News
 
 [![smithery badge](https://smithery.ai/badge/@imprvhub/mcp-claude-spotify)](https://smithery.ai/server/@imprvhub/mcp-claude-hackernews)
