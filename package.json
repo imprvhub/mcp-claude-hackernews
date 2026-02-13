@@ -10,8 +10,8 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.25.2",
-    "axios": "^1.6.0"
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "axios": "^1.13.5"
   },
   "devDependencies": {
     "@types/node": "^22.14.1",
