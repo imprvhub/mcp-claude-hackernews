@@ -18,6 +18,10 @@
 </table>
 
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/imprvhub-mcp-claude-hackernews).
+
 ## Features
 
 - Browse latest stories from Hacker News
