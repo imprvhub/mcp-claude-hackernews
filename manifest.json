@@ -1,0 +1,44 @@
+{
+  "manifest_version": "0.2",
+  "name": "mcp-claude-hackernews",
+  "display_name": "Hacker News MCP",
+  "version": "0.2.0",
+  "description": "Browse, search and read Hacker News from Claude.",
+  "long_description": "A Model Context Protocol server for Hacker News. Lists the newest, top and best stories, searches the archive by keyword through the Algolia HN Search API, fetches a single story, and reads a thread's top-level comments with HTML entities decoded.",
+  "author": {
+    "name": "Iván Luna",
+    "email": "contact@ivanluna.dev",
+    "url": "https://github.com/imprvhub"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imprvhub/mcp-claude-hackernews"
+  },
+  "homepage": "https://github.com/imprvhub/mcp-claude-hackernews",
+  "documentation": "https://github.com/imprvhub/mcp-claude-hackernews#readme",
+  "license": "MPL-2.0",
+  "keywords": [
+    "hacker-news",
+    "hackernews",
+    "news",
+    "search",
+    "mcp"
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "build/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/build/index.js"
+      ],
+      "env": {}
+    }
+  },
+  "compatibility": {
+    "runtimes": {
+      "node": ">=20"
+    }
+  },
+  "user_config": {}
+}

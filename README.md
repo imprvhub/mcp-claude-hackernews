@@ -1,6 +1,6 @@
 # MCP Claude Hacker News
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/imprvhub/mcp-claude-hackernews)](https://archestra.ai/mcp-catalog/imprvhub__mcp-claude-hackernews)
-[![smithery badge](https://smithery.ai/badge/@imprvhub/mcp-claude-spotify)](https://smithery.ai/server/@imprvhub/mcp-claude-hackernews)
+[![Smithery](https://img.shields.io/badge/Smithery-imprvhub%2Fmcp--claude--hackernews-8A2BE2)](https://smithery.ai/server/imprvhub/mcp-claude-hackernews)
 
 
 <table style="border-collapse: collapse; width: 100%; table-layout: fixed;">
@@ -22,25 +22,34 @@
 
 - Browse latest stories from Hacker News
 - View top and best-rated stories
+- Search stories by keyword, by relevance or most recent (Algolia HN Search API)
 - Get story details
-- Read comments for stories
-- Clean formatting of Hacker News content for better readability
+- Read comments for stories, capped so a busy thread cannot flood the context
+- Clean formatting of Hacker News content for better readability, including HTML entity decoding
 
 ## Demo
 
 <p>
   <a href="https://www.youtube.com/watch?v=SmPD6MLifJo">
-    <img src="public/assets/preview.png" width="600" alt="Claude Spotify Integration Demo">
+    <img src="public/assets/preview.png" width="600" alt="Claude Hacker News Integration Demo">
   </a>
 </p>
 
 ## Requirements
 
-- Node.js 16 or higher
+- Node.js 20 or higher
 - Claude Desktop
 - Internet connection to access Hacker News API
 
 ## Installation
+
+### Installing via Smithery
+
+Install the packaged bundle from the [Smithery server page](https://smithery.ai/server/imprvhub/mcp-claude-hackernews), or from the CLI:
+
+```bash
+npx -y @smithery/cli@latest mcp add imprvhub/mcp-claude-hackernews --client claude
+```
 
 ### Installing Manually
 1. Clone or download this repository:
@@ -137,15 +146,16 @@ The MCP server will automatically start when Claude Desktop needs it, based on t
 
 ## Available Tools
 
-The Hacker News MCP provides **5 specialized tools** for different functions:
+The Hacker News MCP provides **6 specialized tools** for different functions:
 
 | Tool | Description | Parameters | Example Usage |
 |------|-------------|------------|---------------|
 | `hn_latest` | Get the most recent stories from Hacker News | `limit`: Optional number of stories (1-50, default: 10) | Get 20 latest stories |
 | `hn_top` | Get the top-ranked stories from Hacker News | `limit`: Optional number of stories (1-50, default: 10) | Get 15 top stories |
 | `hn_best` | Get the best stories from Hacker News | `limit`: Optional number of stories (1-50, default: 10) | Get 25 best stories |
+| `hn_search` | Search stories by keyword | `query`: Required search terms; `limit`: 1-50 (default: 10); `sort`: `relevance` (default) or `date` | Search "rust async" sorted by date |
 | `hn_story` | Get detailed information about a specific story | `story_id`: Required story ID (number) | Get story details by ID |
-| `hn_comments` | Get comments for a story | `story_id`: Story ID (number) OR `story_index`: Index from last list (1-based) | Get comments by story ID or index |
+| `hn_comments` | Get top-level comments for a story | `story_id`: Story ID (number) OR `story_index`: Index from last list (1-based); `limit`: 1-50 (default: 20) | Get comments by story ID or index |
 
 ### Tool Parameters Details
 
@@ -154,6 +164,13 @@ The Hacker News MCP provides **5 specialized tools** for different functions:
   - Type: Number
   - Range: 1-50
   - Default: 10
+
+#### `hn_search`
+- **`query`** (required): Search terms
+  - Type: String
+  - Example: `"model context protocol"`
+- **`limit`** (optional): Number of results, 1-50, default 10
+- **`sort`** (optional): `relevance` (default) or `date` for newest first
 
 #### `hn_story`
 - **`story_id`** (required): The ID of the story to fetch
@@ -167,8 +184,14 @@ The Hacker News MCP provides **5 specialized tools** for different functions:
 - **`story_index`** (optional): The index of the story from the last fetched list
   - Type: Number (1-based)
   - Example: 3 (for the 3rd story in the last list)
+- **`limit`** (optional): Maximum number of top-level comments to return
+  - Type: Number
+  - Range: 1-50
+  - Default: 20
 
-*Note: For `hn_comments`, you must provide either `story_id` OR `story_index`*
+*Note: For `hn_comments`, you must provide either `story_id` OR `story_index`. Only top-level
+comments are fetched; the reply count is reported per comment. The response states how many of
+the thread's top-level comments were returned.*
 
 ## Example Usage
 
@@ -180,6 +203,8 @@ Here are various examples of how to use the Hacker News MCP with Claude:
 "Use hn_latest to get 20 recent stories"
 "Use hn_top with limit 15 to get top stories"
 "Use hn_best to get 25 best stories"
+"Use hn_search with query 'model context protocol' to find related stories"
+"Use hn_search with query 'rust' and sort date to see the newest posts"
 "Use hn_story with story_id 29384756 to get story details"
 "Use hn_comments with story_index 3 to get comments for the 3rd story"
 "Use hn_comments with story_id 12345678 to get comments for that story"
@@ -194,7 +219,7 @@ You can also interact with the MCP using natural language. Claude will interpret
 - "I'd like to see the 20 best articles from Hacker News"
 - "Can you fetch me 30 recent tech news stories from Hacker News?"
 - "Tell me what's the top 50 trending topics on Hacker News"
-- "Show me 20 Hacker News stories about machine learning"
+- "Search Hacker News for stories about machine learning"
 - "Get me the 40 most recent Hacker News headlines"
 - "What are the 30 most active discussions on Hacker News right now?"
 - "I'm interested in reading the 40 most popular Hacker News articles this week"
@@ -244,6 +269,16 @@ To check if the server is running:
 - **macOS/Linux**: Open Terminal and run `ps aux | grep node`
 
 If you don't see the server running, start it manually or use the auto-start method.
+
+## Development
+
+Run the test suite (no network required):
+
+```bash
+npm install
+npm run build
+npm test
+```
 
 ## Contributing
 
